@@ -1,7 +1,16 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 
 const Header = () =>{
+  const logout = () => {
+  localStorage.removeItem("token");
+  toast.success("User has been suceesfully logout!");
+  setTimeout(() => {
+    window.location.href = "/login";
+  }, 500);
+};
+
     return (
      <>
         <header className="flex items-center justify-between mb-6">
@@ -29,7 +38,7 @@ const Header = () =>{
         Settings
       </DropdownMenuItem>
 
-      <DropdownMenuItem className="cursor-pointer p-2 text-red-600 rounded-md hover:bg-red-50">
+      <DropdownMenuItem className="cursor-pointer p-2 text-red-600 rounded-md hover:bg-red-50" onClick={logout}>
         Logout
       </DropdownMenuItem>
     </DropdownMenuContent>

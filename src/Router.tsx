@@ -1,46 +1,40 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate, Outlet } from "react-router";
+import MasterLayout from "./MasterLayout";
+
 import UserDashboard from "./page/dashboard/UserDashboard";
 import UserProfile from "./page/profile/UserProfile";
-import MasterLayout from "./MasterLayout";
-import Login from "./page/login/Login";
 import TemplateUsage from "./page/actionBoard/TemplateUsage";
 import { TeamplateUsageCreate } from "./page/actionBoard/TeamplateUsageCreate";
 import { ActionTask } from "./page/actionBoard/ActionTask";
+import Login from "./page/login/Login";
+// import PublicRoute from "./page/PublicRoute";
+// import AuthGuard from "./page/AuthGuard";
 
+const token = localStorage.getItem("token");
 const Router = createBrowserRouter([
-  {
-    path: "/",
-    element: <MasterLayout/>,
-    children: [
-      {
-         index: true,
-         element: <UserDashboard/>
-      },
-      {
-        path: "profile",
-        element: <UserProfile/>
-      },
-      {
-        path: "template-usage",
-        element: <TemplateUsage/>
-      },
-      {
-        path: "template-usage-create",
-        element: <TeamplateUsageCreate/>
-      },
-      {
-        path: "action-tasks",
-        element: <ActionTask/>
-      },
-      {
-        path: "*",
-        element: <div>404 Not Found</div>
-      }
-    ]
-  },
+  // 🔓 LOGIN ROUTE
   {
     path: "/login",
-    element: <Login/>
+     element: (token) ? <Navigate to="/" replace />:<Login />
+  },
+
+  // 🔐 PROTECTED ROUTES
+  {
+    path: "/",
+    element: token ? <Outlet /> : <Navigate to="/login" replace />,
+    children: [
+      {
+        element: <MasterLayout />,
+        children: [
+          { index: true, element: <UserDashboard /> },
+          { path: "profile", element: <UserProfile /> },
+          { path: "template-usage", element: <TemplateUsage /> },
+          { path: "template-usage-create", element: <TeamplateUsageCreate /> },
+          { path: "action-tasks", element: <ActionTask /> },
+        ],
+      },
+    ],
   },
 ]);
+
 export default Router;

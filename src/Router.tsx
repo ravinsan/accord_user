@@ -7,6 +7,8 @@ import TemplateUsage from "./page/actionBoard/TemplateUsage";
 import { TeamplateUsageCreate } from "./page/actionBoard/TeamplateUsageCreate";
 import { ActionTask } from "./page/actionBoard/ActionTask";
 import Login from "./page/login/Login";
+import ActionBoardTemplateDesign from "./page/actionBoard/ActionBoardTemplateDesign";
+import TemplateDesignView from "./page/actionBoard/TemplateDesignView";
 // import PublicRoute from "./page/PublicRoute";
 // import AuthGuard from "./page/AuthGuard";
 
@@ -31,6 +33,8 @@ const Router = createBrowserRouter([
           { path: "template-usage", element: <TemplateUsage /> },
           { path: "template-usage-create", element: <TeamplateUsageCreate /> },
           { path: "action-tasks", element: <ActionTask /> },
+          { path: "action-board-templates-design", element: <ActionBoardTemplateDesign /> },
+          { path: "templates-design-view", element: <TemplateDesignView /> },
         ],
       },
     ],

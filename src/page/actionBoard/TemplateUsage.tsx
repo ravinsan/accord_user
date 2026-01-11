@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import api from "@/api/axios";
+import { Link } from "react-router";
 
 export default function TemplateUsagePage() {
   const [search, setSearch] = useState("");
@@ -28,6 +29,8 @@ export default function TemplateUsagePage() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [approvalData, setApprovalData] = useState<any[]>([]);
+  const [approvalLoading, setApprovalLoading] = useState(false);
 
   const fetchData = async (searchText = search) => {
     try {
@@ -45,6 +48,21 @@ export default function TemplateUsagePage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchApprovalDetails = async (id: number) => {
+    try {
+      setApprovalLoading(true);
+      const res = await api.get("/template-usage-aproval", {
+        params: { dataid: id },
+      });
+      setApprovalData(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setApprovalData([]);
+    } finally {
+      setApprovalLoading(false);
     }
   };
 
@@ -69,7 +87,9 @@ export default function TemplateUsagePage() {
       ? allData.filter(
           (item) =>
             item.template_name.toLowerCase().includes(search.toLowerCase()) ||
-            item.template_usages_name.toLowerCase().includes(search.toLowerCase()) ||
+            item.template_usages_name
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
             item.description.toLowerCase().includes(search.toLowerCase())
         )
       : allData;
@@ -151,10 +171,26 @@ export default function TemplateUsagePage() {
                           className="bg-yellow-400 text-white rounded-full text-xs px-3"
                           onClick={() => {
                             setSelectedRow(row);
+                            fetchApprovalDetails(row.id);
                             setIsModalOpen(true);
                           }}
                         >
                           Approval Details
+                        </Button>
+                        <Button
+                          asChild
+                          size="sm"
+                          className="bg-sky-400 text-white rounded-full text-xs px-3"
+                        >
+                          <Link
+                            to="/action-board-templates-design"
+                            state={{
+                              template_id: row.template_id,
+                              template_usage_id: row.id,
+                            }}
+                          >
+                            Template Design
+                          </Link>
                         </Button>
                       </td>
                     </tr>
@@ -170,9 +206,7 @@ export default function TemplateUsagePage() {
               </tbody>
             </table>
 
-            {loading && (
-              <p className="text-center py-4 text-sm">Loading...</p>
-            )}
+            {loading && <p className="text-center py-4 text-sm">Loading...</p>}
           </div>
 
           {/* PAGINATION */}
@@ -207,7 +241,7 @@ export default function TemplateUsagePage() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-       <DialogContent className="!w-[50vw] xl:!w-[800px] 2xl:!w-[900px] !max-w-none">
+        <DialogContent className="!w-[50vw] xl:!w-[800px] 2xl:!w-[900px] !max-w-none">
           <DialogHeader>
             <DialogTitle>
               Approval Details for {selectedRow?.template_usages_name}
@@ -217,34 +251,69 @@ export default function TemplateUsagePage() {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100 text-sm">
-                  <th className="p-3 border border-gray-300 text-left">Sl No.</th>
-                  <th className="p-3 border border-gray-300 text-left">Approval Status</th>
-                  <th className="p-3 border border-gray-300 text-left">Date</th>
-                  <th className="p-3 border border-gray-300 text-left">Approved By</th>
-                  <th className="p-3 border border-gray-300 text-left">Comments</th>
-                  <th className="p-3 border border-gray-300 text-left">Department</th>
-                  <th className="p-3 border border-gray-300 text-left">Priority</th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    Sl No.
+                  </th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    Approval Index Name
+                  </th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    Approval Section Name
+                  </th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    User Name
+                  </th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    Status
+                  </th>
+                  <th className="p-3 border border-gray-300 text-left">
+                    Company Name
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b text-sm">
-                  <td className="p-3 border border-gray-300">1</td>
-                  <td className="p-3 border border-gray-300">Approved</td>
-                  <td className="p-3 border border-gray-300">2023-10-01</td>
-                  <td className="p-3 border border-gray-300">John Doe</td>
-                  <td className="p-3 border border-gray-300">Looks good</td>
-                  <td className="p-3 border border-gray-300">IT</td>
-                  <td className="p-3 border border-gray-300">High</td>
-                </tr>
-                <tr className="border-b text-sm">
-                  <td className="p-3 border border-gray-300">2</td>
-                  <td className="p-3 border border-gray-300">Pending</td>
-                  <td className="p-3 border border-gray-300">2023-10-02</td>
-                  <td className="p-3 border border-gray-300">Jane Smith</td>
-                  <td className="p-3 border border-gray-300">Awaiting review</td>
-                  <td className="p-3 border border-gray-300">HR</td>
-                  <td className="p-3 border border-gray-300">Medium</td>
-                </tr>
+                {approvalLoading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center p-4">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : approvalData.length > 0 ? (
+                  approvalData.map((item, index) => (
+                    <tr key={index} className="border-b text-sm">
+                      <td className="p-3 border border-gray-300">
+                        {index + 1}
+                      </td>
+                      <td className="p-3 border border-gray-300">
+                        {item.approvalIndex?.approval_indices_name}
+                      </td>
+                      <td className="p-3 border border-gray-300">
+                        {item.approval_section_name}
+                      </td>
+                      <td className="p-3 border border-gray-300">
+                        {item.umuser?.Full_name}
+                      </td>
+                      <td className="p-3 border border-gray-300">
+                        {item.user_approval_status == 0
+                          ? "In Progress"
+                          : item.user_approval_status == 1
+                          ? "Approved"
+                          : item.user_approval_status == 2
+                          ? "Not Assigned"
+                          : "Rejected"}
+                      </td>
+                      <td className="p-3 border border-gray-300">
+                        {item.company?.company_name}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center p-4">
+                      No approval details found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
